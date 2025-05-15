@@ -1,35 +1,64 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import { MsalProvider, useIsAuthenticated, useMsal } from '@azure/msal-react';
+import { PublicClientApplication } from '@azure/msal-browser';
+import { msalConfig, loginRequest } from './authConfig';
 
-function App() {
-  const [count, setCount] = useState(0)
+const msalInstance = new PublicClientApplication(msalConfig);
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+function SignInButton() {
+  const { instance } = useMsal();
+
+  const handleLogin = () => {
+    instance.loginPopup(loginRequest).catch(e => {
+      console.error(e);
+    });
+  };
+
+  return <button onClick={handleLogin}>Sign in with Microsoft</button>;
 }
 
-export default App
+function SignOutButton() {
+  const { instance } = useMsal();
+
+  const handleLogout = () => {
+    instance.logoutPopup().catch(e => {
+      console.error(e);
+    });
+  };
+
+  return <button onClick={handleLogout}>Sign out</button>;
+}
+
+function Profile() {
+  const { accounts } = useMsal();
+  const account = accounts[0];
+
+  return (
+    <div>
+      <h2>Welcome, {account?.name}</h2>
+      <p>Email: {account?.username}</p>
+      <SignOutButton />
+    </div>
+  );
+}
+
+function Content() {
+  const isAuthenticated = useIsAuthenticated();
+
+  return (
+    <div style={{ textAlign: 'center', marginTop: '100px' }}>
+      <h1>MSAL Login (React + Vite)</h1>
+      {isAuthenticated ? <Profile /> : <SignInButton />}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <MsalProvider instance={msalInstance}>
+      <Content />
+    </MsalProvider>
+  );
+}
+
+export default App;

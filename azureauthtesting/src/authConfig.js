@@ -1,8 +1,8 @@
 export const msalConfig = {
   auth: {
-    clientId: '<YOUR_CLIENT_ID>',
-    authority: 'https://login.microsoftonline.com/<YOUR_TENANT_ID>',
-    redirectUri: 'http://localhost:5173',
+    clientId: import.meta.env.VITE_CLIENT_ID,
+    authority: import.meta.env.VITE_AUTHORITY,
+    redirectUri: 'http://localhost:5173/auth/callback',
   },
 };
 
